@@ -8,7 +8,7 @@
 import Foundation
 import SwiftData
 
-
+// Loadable Json Data
 struct Animal: Decodable{
     var name: String
     var favColor: String
@@ -19,6 +19,7 @@ struct Animal: Decodable{
     }
 }
 
+// Loading Json
 @Observable
 class DataHelper: ObservableObject {
     var animalList: [Animal] = []
@@ -40,13 +41,13 @@ class DataHelper: ObservableObject {
     }
 }
 
-
+// Swift Data
 @Model
 class AnimalSwiftData : Identifiable{
-    var id: UUID
-    var name: String
-    var favColor: String
-    init(name: String, favColor: String){
+    var id: UUID?
+    var name: String?
+    var favColor: String?
+    init(name: String?, favColor: String?){
         self.id = UUID()
         self.name = name
         self.favColor = favColor

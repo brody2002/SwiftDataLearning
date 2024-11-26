@@ -18,26 +18,48 @@ struct ContentView: View {
 
     
     var suggestedTokens: [ColorToken] {
-        let uniqueColors = Set(animalData.map { $0.favColor.localizedLowercase })
+        let uniqueColors = Set(animalData.map { $0.favColor?.localizedLowercase })
         let allowedColors = ["red", "blue", "green", "yellow"]
+        
+        // makes sure uniqueColors returns only the wanted colors
         return uniqueColors
-            .filter { allowedColors.contains($0) }
-            .map { ColorToken(name: $0) }
+            .filter { allowedColors.contains($0!) }
+            .map { ColorToken(name: $0!) }
     }
-
-
     
-    var filteredAnimalData: [AnimalSwiftData] {
-        animalData.filter { animal in
-            // Match search text or show all if searchText is empty
-            let matchesSearchText = searchText.isEmpty || animal.name.localizedLowercase.contains(searchText.localizedLowercase)
-            
-            // Match selected tokens or show all if no tokens are selected
-            let matchesTokens = selectedTokens.isEmpty || selectedTokens.contains { $0.name == animal.favColor.localizedLowercase }
-            
-            return matchesSearchText && matchesTokens
+    enum SortOrder: String, CaseIterable, Identifiable {
+        case alphabetical
+        case defaultOrder
+        
+        var id: String { self.rawValue }
+        var displayName: String {
+            switch self {
+            case .alphabetical: return "Alphabetical"
+            case .defaultOrder: return "Default"
+            }
         }
     }
+
+
+    @State var sortOrder: SortOrder = .defaultOrder
+    
+    var filteredAnimalData: [AnimalSwiftData] {
+        
+            // parses the data
+            let filteredData = animalData.filter { animal in
+                let matchesSearchText = searchText.isEmpty || ((animal.name?.localizedLowercase.contains(searchText.localizedLowercase)) != nil)
+                let matchesTokens = selectedTokens.isEmpty || selectedTokens.contains { $0.name == animal.favColor?.localizedLowercase }
+                return matchesSearchText && matchesTokens
+            }
+
+            // sorts the data
+            switch sortOrder {
+            case .alphabetical:
+                return filteredData.sorted { $0.name!.localizedCaseInsensitiveCompare($1.name!) == .orderedAscending }
+            case .defaultOrder:
+                return filteredData
+            }
+        }
     
     var selectedColor: (String) -> Color = { color in
             let color = color.localizedLowercase
@@ -59,9 +81,9 @@ struct ContentView: View {
                 List{
                     ForEach(filteredAnimalData, id: \.self){
                         animal in
-                        Text("Animal: \(animal.name)")
+                        Text("Animal: \(animal.name!)")
                             .padding()
-                            .background(selectedColor(animal.favColor))
+                            .background(selectedColor(animal.favColor!))
                             .foregroundColor(.black)
                             .cornerRadius(8)
                             .bold()
@@ -72,6 +94,7 @@ struct ContentView: View {
                 }
                 
             }
+            .navigationTitle("Animal Finder")
             .onAppear{
                 dataHelper.loadAnimals()
                 for animal in dataHelper.animalList{
@@ -96,6 +119,20 @@ struct ContentView: View {
                     }, label:{
                         Image(systemName: "trash")
                     })
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu{
+                        Picker("Sort Order", selection: $sortOrder) {
+                            ForEach(SortOrder.allCases) { order in
+                                Text(order.displayName).tag(order)
+                            }
+                        }
+                        .pickerStyle(MenuPickerStyle())
+                    } label: {
+                        Image(systemName: "line.3.horizontal.decrease.circle")
+                    }
+                    
+                    
                 }
                 
             }

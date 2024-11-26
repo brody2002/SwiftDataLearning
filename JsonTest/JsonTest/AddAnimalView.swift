@@ -25,6 +25,9 @@ struct AddAnimalView: View {
             }
             Section{
                 Button(action:{
+                    if favColor != "red" || favColor != "blue" || favColor != "yellow"{
+                        favColor = "green"
+                    }
                     mainContext.insert(AnimalSwiftData(name: animalName, favColor: favColor))
                     dismiss()
                     

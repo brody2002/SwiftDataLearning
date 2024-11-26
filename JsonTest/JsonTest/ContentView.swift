@@ -19,8 +19,12 @@ struct ContentView: View {
     
     var suggestedTokens: [ColorToken] {
         let uniqueColors = Set(animalData.map { $0.favColor.localizedLowercase })
-        return uniqueColors.map { ColorToken(name: $0) }
+        let allowedColors = ["red", "blue", "green", "yellow"]
+        return uniqueColors
+            .filter { allowedColors.contains($0) }
+            .map { ColorToken(name: $0) }
     }
+
 
     
     var filteredAnimalData: [AnimalSwiftData] {

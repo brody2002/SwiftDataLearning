@@ -11,9 +11,11 @@ import SwiftData
 
 struct Animal: Decodable{
     var name: String
+    var favColor: String
     
-    init(name: String) {
+    init(name: String, favColor: String) {
         self.name = name
+        self.favColor = favColor
     }
 }
 
@@ -43,8 +45,10 @@ class DataHelper: ObservableObject {
 class AnimalSwiftData : Identifiable{
     var id: UUID
     var name: String
-    init(name: String){
+    var favColor: String
+    init(name: String, favColor: String){
         self.id = UUID()
         self.name = name
+        self.favColor = favColor
     }
 }

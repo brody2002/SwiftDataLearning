@@ -1,11 +1,14 @@
 [
     {
-        "name" : "dog"
+        "name" : "dog",
+        "favColor" : "blue"
     },
     {
-        "name" : "monkey"
+        "name" : "monkey",
+        "favColor" : "red"
     },
     {
-        "name" : "fish"
+        "name" : "fish",
+        "favColor" : "yellow"
     }
 ]

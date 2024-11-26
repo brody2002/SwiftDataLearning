@@ -12,6 +12,7 @@ struct AddAnimalView: View {
     @Environment(\.dismiss) var dismiss
     
     @State var animalName: String = ""
+    @State var favColor: String = ""
     var body: some View {
         Form{
             Section{
@@ -19,8 +20,12 @@ struct AddAnimalView: View {
                     .padding()
             }
             Section{
+                TextField("Fav Color", text: $favColor)
+                    .padding()
+            }
+            Section{
                 Button(action:{
-                    mainContext.insert(AnimalSwiftData(name: animalName))
+                    mainContext.insert(AnimalSwiftData(name: animalName, favColor: favColor))
                     dismiss()
                     
                 }, label: {})

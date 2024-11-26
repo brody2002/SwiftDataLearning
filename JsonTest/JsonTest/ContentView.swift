@@ -12,14 +12,57 @@ struct ContentView: View {
     @Environment(\.modelContext) var mainContext
     @State var dataHelper = DataHelper()
     @State var addItem: Bool = false
+    @State var searchText: String = ""
+    
+    @State var selectedTokens: [ColorToken] = []
+
+    
+    var suggestedTokens: [ColorToken] {
+        let uniqueColors = Set(animalData.map { $0.favColor.localizedLowercase })
+        return uniqueColors.map { ColorToken(name: $0) }
+    }
+
+    
+    var filteredAnimalData: [AnimalSwiftData] {
+        animalData.filter { animal in
+            // Match search text or show all if searchText is empty
+            let matchesSearchText = searchText.isEmpty || animal.name.localizedLowercase.contains(searchText.localizedLowercase)
+            
+            // Match selected tokens or show all if no tokens are selected
+            let matchesTokens = selectedTokens.isEmpty || selectedTokens.contains { $0.name == animal.favColor.localizedLowercase }
+            
+            return matchesSearchText && matchesTokens
+        }
+    }
+    
+    var selectedColor: (String) -> Color = { color in
+            let color = color.localizedLowercase
+            switch color {
+            case "red":
+                return Color.red
+            case "yellow":
+                return Color.yellow
+            case "blue":
+                return Color.blue
+            default:
+                return Color.green
+            }
+        }
     
     var body: some View {
         NavigationStack{
             Form{
                 List{
-                    ForEach(animalData, id: \.self){
+                    ForEach(filteredAnimalData, id: \.self){
                         animal in
                         Text("Animal: \(animal.name)")
+                            .padding()
+                            .background(selectedColor(animal.favColor))
+                            .foregroundColor(.black)
+                            .cornerRadius(8)
+                            .bold()
+                            
+                            
                     }.onDelete(perform: delete)
                     
                 }
@@ -28,7 +71,7 @@ struct ContentView: View {
             .onAppear{
                 dataHelper.loadAnimals()
                 for animal in dataHelper.animalList{
-                    let x = AnimalSwiftData(name: animal.name)
+                    let x = AnimalSwiftData(name: animal.name, favColor: animal.favColor)
                     mainContext.insert(x)
                 }
                 
@@ -41,10 +84,30 @@ struct ContentView: View {
                         Image(systemName: "plus")
                     })
                 }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(action:{
+                        for animal in animalData{
+                            mainContext.delete(animal)
+                        }
+                    }, label:{
+                        Image(systemName: "trash")
+                    })
+                }
+                
             }
             .sheet(isPresented: $addItem) {
                 AddAnimalView() 
             }
+            .searchable(
+                text: $searchText,
+                tokens: $selectedTokens,
+                suggestedTokens: .constant(suggestedTokens),
+                prompt: "Find animals 🦦"
+            ) { token in
+                Label(token.name.capitalized, systemImage: "paintpalette")
+            }
+            
+            
         }
             
     }
@@ -54,6 +117,11 @@ struct ContentView: View {
             let animal = animalData[i]
             mainContext.delete(animal)
         }
+    }
+    
+    struct ColorToken: Identifiable, Hashable {
+        var id: String { name }
+        var name: String
     }
 }
 
